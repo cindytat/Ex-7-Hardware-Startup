@@ -45,6 +45,7 @@ class ProjectNameGUI(App):
         """
         return SCREEN_MANAGER
 
+#hi bestie
 
 Window.clearcolor = (1, 1, 1, 1)  # White
 count = 0
