@@ -77,9 +77,13 @@
         color: 0, 0, 0
 
     DPEAButton:
+        id: stepper_on_off
+        text: "Stepper Motor On" if stepper_on_off.state == "normal" else "Stepper Motor Off"
+        size: 100, 100
         x: root.width * 0.75
         y: root.height * 0.25
         color: 255, 0, 255, 1 #pink
+        on_press: root.pressed()
 
     ImageButton:
         id: cat

@@ -96,6 +96,10 @@ class MainScreen(Screen):
         motor_label = self.ids.motor_label
         motor_label.text = 'Motor Off' if motor_label.text == 'Motor On' else 'Motor On'
 
+    def stepper_on_off(self):
+        stepper_label = self.ids.stepper_label
+        stepper_label.text = 'Stepper Motor off' if stepper_label.text == 'Stepper Motor On' else 'Stepper Motor On'
+
     def click(self):
         global count
         count = count + 1
