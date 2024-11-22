@@ -1,12 +1,9 @@
 import os
 
-#os.environ['DISPLAY'] = ":0.0"
-#os.environ['KIVY_WINDOW'] = 'egl_rpi'
-
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.lang import Builder
-from kivy.properties import StringProperty
+#from kivy.properties import StringProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.label import Label
 from kivy.uix.slider import Slider
@@ -18,6 +15,7 @@ from pidev.kivy.PauseScreen import PauseScreen
 from pidev.kivy import DPEAButton
 from pidev.kivy import ImageButton
 from pidev.kivy.selfupdatinglabel import SelfUpdatingLabel
+from kivy.clock import Clock
 
 from dpeaDPi.DPiComputer import DPiComputer
 from dpeaDPi.DPiStepper import *
@@ -37,9 +35,7 @@ dpiStepper.setMicrostepping(microstepping)
 speed_steps_per_second = 200 * microstepping
 accel_steps_per_second_per_second = speed_steps_per_second
 dpiStepper.setSpeedInStepsPerSecond(0, speed_steps_per_second)
-dpiStepper.setSpeedInStepsPerSecond(1, speed_steps_per_second)
 dpiStepper.setAccelerationInStepsPerSecondPerSecond(0, accel_steps_per_second_per_second)
-dpiStepper.setAccelerationInStepsPerSecondPerSecond(1, accel_steps_per_second_per_second)
 
 stepperStatus = dpiStepper.getStepperStatus(0)
 print(f"Pos = {stepperStatus}")
@@ -58,9 +54,7 @@ MIXPANEL = MixPanel("Project Name", MIXPANEL_TOKEN)
 
 SCREEN_MANAGER = ScreenManager()
 MAIN_SCREEN_NAME = 'main'
-SECOND_SCREEN_NAME = 'second'
 ADMIN_SCREEN_NAME = 'admin'
-NEW_SCREEN_NAME = 'new'
 
 
 class ProjectNameGUI(App):
@@ -75,8 +69,6 @@ class ProjectNameGUI(App):
         """
         return SCREEN_MANAGER
 
-#hi bestie
-
 Window.clearcolor = (1, 1, 1, 1)  # White
 count = 0
 
@@ -84,6 +76,7 @@ class MainScreen(Screen):
     """
     Class to handle the main screen and its associated touch events
     """
+    y = False
 
     def pressed(self):
         """
@@ -92,31 +85,60 @@ class MainScreen(Screen):
         """
         print("Callback from MainScreen.pressed()")
 
-    def moto_on_off(self):
-        motor_label = self.ids.motor_label
-        motor_label.text = 'Motor Off' if motor_label.text == 'Motor On' else 'Motor On'
-
     def stepper_on_off(self):
-        stepper_label = self.ids.stepper_label
-        stepper_label.text = 'Stepper Motor off' if stepper_label.text == 'Stepper Motor On' else 'Stepper Motor On'
+        if self.y:
+            self.y = False
+            self.ids["stepper_on_off"].text = "Stepper Motor On"
+            dpiStepper.enableMotors(True)
+            dpiStepper.moveToRelativePositionInSteps(stepper_num, 5400, False)
+            dpiStepper.decelerateToAStop(0)
+        else:
+            self.y = True
+            self.ids["stepper_on_off"].text = "Stepper Motor Off"
+            dpiStepper.enableMotors(False)
 
-    def click(self):
-        global count
-        count = count + 1
-        self.ids.btn.text= str(count)
+    def changeDirection(self):
+        if self.y:
+            self.y = False
+            self.ids["changeDirection"].text = "CCW"
+            dpiStepper.enableMotors(True)
+            dpiStepper.moveToRelativePositionInSteps(stepper_num, 8000, True)
+            dpiStepper.decelerateToAStop(0)
+        else:
+            self.y = True
+            self.ids["changeDirection"].text = "CW"
+            dpiStepper.enableMotors(True)
+            dpiStepper.moveToRelativePositionInSteps(stepper_num, -8000, True)
+            dpiStepper.decelerateToAStop(0)
 
-    def secondscreen(self):
-        SCREEN_MANAGER.current = "second"
+    def slider(self):
+        dpiStepper.enableMotors(True)
+        speed_steps_per_second = 1600 * self.ids.slider.value
+        accel_steps_per_second_per_second = speed_steps_per_second
+        dpiStepper.setSpeedInStepsPerSecond(0,speed_steps_per_second)
+        dpiStepper.setAccelerationInStepsPerSecondPerSecond(0, accel_steps_per_second_per_second)
+        dpiStepper.moveToRelativePositionInSteps(stepper_num, 8000, True)
+        dpiStepper.decelerateToAStop(0)
 
-    def newscreen(self):
-        SCREEN_MANAGER.current = "new"
+    def __init__(self, **kwargs):
+        super(MainScreen, self).__init__(**kwargs)
+        self.stepper_num = 0
+        self.revolutions = 15
+        self.steps_per_revolution = 200 * 8
 
-    def animate_button(self):
-        anim = Animation(size = (200, 200), duration = 5)
-        anim.start(self.ids.cat2)
-        anim = Animation(size = (100, 100), duration = 2)
-        anim.start(self.ids.cat2)
-        self.newscreen()
+    def start_revolution(self):
+        speed_steps_per_second = self.steps_per_revolution
+
+        dpiStepper.setSpeedInStepsPerSecond(self.stepper_num, speed_steps_per_second)
+        dpiStepper.setAccelerationInStepsPerSecondPerSecond(self.stepper_num, speed_steps_per_second)
+
+        dpiStepper.moveToRelativePositionInSteps(self.stepper_num, self.revolutions * self.steps_per_revolution, True)
+
+        Clock.schedule_once(self.update_position_label, 1)
+
+    def update_position_label(self, dt):
+        current_position = str(dpiStepper.getCurrentPositionInSteps(self.stepper_num))
+        self.ids.position_label.text = "Position: " + current_position
 
     def admin_action(self):
         """
@@ -125,16 +147,6 @@ class MainScreen(Screen):
         :return: None
         """
         SCREEN_MANAGER.current = 'passCode'
-
-class SecondScreen(Screen):
-    def secondscreen(self):
-        SCREEN_MANAGER.current = "main"
-
-class NewScreen(Screen):
-    def newscreen(self):
-        SCREEN_MANAGER.current = "main"
-
-
 
 class AdminScreen(Screen):
     """
@@ -185,11 +197,7 @@ Widget additions
 """
 
 Builder.load_file('main.kv')
-Builder.load_file('second.kv')
-Builder.load_file('new.kv')
 SCREEN_MANAGER.add_widget(MainScreen(name=MAIN_SCREEN_NAME))
-SCREEN_MANAGER.add_widget(SecondScreen(name=SECOND_SCREEN_NAME))
-SCREEN_MANAGER.add_widget(NewScreen(name=NEW_SCREEN_NAME))
 SCREEN_MANAGER.add_widget(PassCodeScreen(name='passCode'))
 SCREEN_MANAGER.add_widget(PauseScreen(name='pauseScene'))
 SCREEN_MANAGER.add_widget(AdminScreen(name=ADMIN_SCREEN_NAME))
