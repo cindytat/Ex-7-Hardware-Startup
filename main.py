@@ -42,8 +42,8 @@ print(f"Pos = {stepperStatus}")
 
 stepper_num = 0
 steps = 1600
-wait_to_finish_moving_flg = True
-dpiStepper.moveToRelativePositionInSteps(stepper_num, steps, wait_to_finish_moving_flg)
+#wait_to_finish_moving_flg = True
+#dpiStepper.moveToRelativePositionInSteps(stepper_num, steps, wait_to_finish_moving_flg)
 
 from datetime import datetime
 
@@ -76,7 +76,7 @@ class MainScreen(Screen):
     """
     Class to handle the main screen and its associated touch events
     """
-    y = False
+    y = True
 
     def pressed(self):
         """
@@ -90,12 +90,13 @@ class MainScreen(Screen):
             self.y = False
             self.ids["stepper_on_off"].text = "Stepper Motor On"
             dpiStepper.enableMotors(True)
-            dpiStepper.moveToRelativePositionInSteps(stepper_num, 5400, False)
-            dpiStepper.decelerateToAStop(0)
+            dpiStepper.moveToRelativePositionInSteps(stepper_num, 10000, False)
+            #dpiStepper.decelerateToAStop(0)
         else:
             self.y = True
             self.ids["stepper_on_off"].text = "Stepper Motor Off"
             dpiStepper.enableMotors(False)
+
 
     def changeDirection(self):
         if self.y:
@@ -134,10 +135,11 @@ class MainScreen(Screen):
 
         dpiStepper.moveToRelativePositionInSteps(self.stepper_num, self.revolutions * self.steps_per_revolution, True)
 
-        Clock.schedule_once(self.update_position_label, 1)
+        #Clock.schedule_once(self.update_position_label, 1)
+        self.update_position_label()
 
-    def update_position_label(self, dt):
-        current_position = str(dpiStepper.getCurrentPositionInSteps(self.stepper_num))
+    def update_position_label(self):
+        current_position = str(dpiStepper.getCurrentPositionInMillimeters(self.stepper_num))
         self.ids.position_label.text = "Position: " + current_position
 
     def admin_action(self):
