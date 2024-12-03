@@ -16,11 +16,14 @@ from pidev.kivy import DPEAButton
 from pidev.kivy import ImageButton
 from pidev.kivy.selfupdatinglabel import SelfUpdatingLabel
 from kivy.clock import Clock
-
 from dpeaDPi.DPiComputer import DPiComputer
 from dpeaDPi.DPiStepper import *
 from threading import Thread
 from time import sleep
+
+dpiComputer = DPiComputer()
+dpiComputer.initialize()
+
 
 dpiStepper = DPiStepper()
 dpiStepper.setBoardNumber(0)
@@ -28,7 +31,7 @@ dpiStepper.setBoardNumber(0)
 if dpiStepper.initialize() != True:
     print("Communication with the DPiStepper board failed.")
 
-dpiStepper.enableMotors(True)
+#dpiStepper.enableMotors(True)
 
 microstepping = 8
 dpiStepper.setMicrostepping(microstepping)
@@ -166,6 +169,21 @@ class MainScreen(Screen):
         print("Work!")
         t = Thread(target=self.getPosition)
         t.start()
+
+    def servo_cw(self):
+        i = 0
+        servo_number = 0
+        for i in range(181):
+            dpiComputer.writeServo(servo_number, i)
+            sleep(.05)
+
+    def servo_ccw(self):
+        i = 0
+        servo_number = 0
+        for i in range(180, 0, -1):
+            dpiComputer.writeServo(servo_number, i)
+            sleep(.05)
+
 
     def admin_action(self):
         """

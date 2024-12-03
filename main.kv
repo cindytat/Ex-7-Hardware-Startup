@@ -29,7 +29,6 @@
         y: root.height * 0.75
         color: 255, 255, 0, 1 #yellow
 
-
     Slider:
         id: slider
         min: 0
@@ -54,3 +53,22 @@
         y: root.width * 0.35
         color: 0, 1, 0, 1 #green
         on_press: root.update()
+
+    DPEAButton:
+        id: servo_cw
+        text: "Rotate Servo 0 CW"
+        size: 100, 100
+        x: root.width * 0.50
+        y: root.height * 0.35
+        color: 0, 0, 255, 1 #blue
+        on_press: root.servo_cw()
+
+    DPEAButton:
+        id: servo_ccw
+        text: "Rotate Servo 0 CCW"
+        size: 100, 100
+        x: root.width * 0.75
+        y: root.height * 0.35
+        color: 0, 0, 255, 1 #blue
+        on_press: root.servo_ccw()
+
