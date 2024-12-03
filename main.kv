@@ -47,17 +47,10 @@
         color: 0,0,0
 
     DPEAButton:
-        id: start_revolution
-        text: "Start 15 Revolutions CW"
+        id: getPosition
+        text: "getPos"
         size: 100, 100
         x: root.width * 0.25
         y: root.width * 0.35
         color: 0, 1, 0, 1 #green
-        on_press: root.start_revolution()
-
-    Label:
-        id: position
-        text: "Position: "
-        x: root.width * 0.20
-        y: root.width * 0.30
-        color: 0,0,0
+        on_press: root.update()

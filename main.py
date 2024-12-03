@@ -19,6 +19,7 @@ from kivy.clock import Clock
 
 from dpeaDPi.DPiComputer import DPiComputer
 from dpeaDPi.DPiStepper import *
+from threading import Thread
 from time import sleep
 
 dpiStepper = DPiStepper()
@@ -121,26 +122,50 @@ class MainScreen(Screen):
         dpiStepper.moveToRelativePositionInSteps(stepper_num, 8000, True)
         dpiStepper.decelerateToAStop(0)
 
-    def __init__(self, **kwargs):
-        super(MainScreen, self).__init__(**kwargs)
-        self.stepper_num = 0
-        self.revolutions = 15
-        self.steps_per_revolution = 200 * 8
+    def getPosition(self):
+        self.ids["getPosition"].text = str(dpiStepper.getCurrentPositionInSteps(0)[1])
+        dpiStepper.enableMotors(True)
 
-    def start_revolution(self):
-        speed_steps_per_second = self.steps_per_revolution
+        speed_steps_per_second = 1600
+        accel_steps_per_second_per_second = speed_steps_per_second
+        dpiStepper.setSpeedInStepsPerSecond(0, speed_steps_per_second)
+        dpiStepper.setAccelerationInStepsPerSecondPerSecond(0, accel_steps_per_second_per_second)
+        print("One")
+        dpiStepper.moveToRelativePositionInSteps(stepper_num, 24000, True)
+        self.ids["getPosition"].text = str(dpiStepper.getCurrentPositionInSteps(0)[1])
+        sleep(5)
 
-        dpiStepper.setSpeedInStepsPerSecond(self.stepper_num, speed_steps_per_second)
-        dpiStepper.setAccelerationInStepsPerSecondPerSecond(self.stepper_num, speed_steps_per_second)
+        speed_steps_per_second = 8000
+        accel_steps_per_second_per_second = speed_steps_per_second
+        dpiStepper.setSpeedInStepsPerSecond(0, speed_steps_per_second)
+        dpiStepper.setAccelerationInStepsPerSecondPerSecond(0, accel_steps_per_second_per_second)
+        print("Two")
+        dpiStepper.moveToRelativePositionInSteps(stepper_num, 16000, True)
+        self.ids["getPosition"].text = str(dpiStepper.getCurrentPositionInSteps(0)[1])
+        sleep(5)
 
-        dpiStepper.moveToRelativePositionInSteps(self.stepper_num, self.revolutions * self.steps_per_revolution, True)
+        dpiStepper.moveToRelativePositionInSteps(stepper_num, -40000, True)
+        print("Three")
+        self.ids["getPosition"].text = str(dpiStepper.getCurrentPositionInSteps(0)[1])
+        sleep(5)
 
-        #Clock.schedule_once(self.update_position_label, 1)
-        self.update_position_label()
+        speed_steps_per_second = 12800
+        accel_steps_per_second_per_second = speed_steps_per_second
+        dpiStepper.setSpeedInStepsPerSecond(0, speed_steps_per_second)
+        dpiStepper.setAccelerationInStepsPerSecondPerSecond(0, accel_steps_per_second_per_second)
+        print("Four")
+        dpiStepper.moveToRelativePositionInSteps(stepper_num, -160000, True)
+        self.ids["getPosition"].text = str(dpiStepper.getCurrentPositionInSteps(0)[1])
+        sleep(5)
 
-    def update_position_label(self):
-        current_position = str(dpiStepper.getCurrentPositionInMillimeters(self.stepper_num))
-        self.ids.position_label.text = "Position: " + current_position
+        dpiStepper.moveToRelativePositionInSteps(stepper_num, 160000, True)
+        print("Five")
+        self.ids["getPosition"].text = str(dpiStepper.getCurrentPositionInSteps(0)[1])
+
+    def update(self):
+        print("Work!")
+        t = Thread(target=self.getPosition)
+        t.start()
 
     def admin_action(self):
         """
